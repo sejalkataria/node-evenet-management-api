@@ -50,13 +50,10 @@ router.put('/users/forget-password', async (req, res) => {
 
 router.put('/users/reset-password', resetAuth, async (req, res) => {
     const user = await User.findOne({ _id: req.user._id })
-    console.log("user.....", user)
-    console.log("body.....", req.body)
     const updates = Object.keys(req.body)
     try {
         updates.forEach((update) => req.user[update] = req.body[update])
         await req.user.save()
-        console.log('updated')
         res.send(req.user)
     }
     catch (e) {

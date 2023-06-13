@@ -15,7 +15,7 @@ const resetAuth = async (req, res, next) => {
         next()
     }
     catch (e) {
-        res.status(401).send({ error: 'Please Authenticate!' })
+        res.status(401).send({ error: 'session expired' })
     }
 
 }

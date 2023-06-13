@@ -8,7 +8,6 @@ const router = new express.Router()
 
 //to create event of loggedIn User
 router.post('/events', auth, async (req, res) => {
-    console.log('event body', { ...req.body })
     const event = new Event({
         ...req.body,
         owner: req.user._id
