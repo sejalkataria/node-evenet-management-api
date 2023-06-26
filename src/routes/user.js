@@ -1,10 +1,11 @@
 const express = require('express')
 const User = require('../models/user')
-const restAuth = require('../middleware/resetAuth')
+const auth = require('../middleware/auth')
 const resetAuth = require('../middleware/resetAuth')
 
 const router = new express.Router()
 
+//register user
 router.post('/users', async (req, res) => {
     const user = new User(req.body)
     try {
@@ -16,6 +17,7 @@ router.post('/users', async (req, res) => {
     }
 })
 
+//login user
 router.post('/users/login', async (req, res) => {
     try {
         const user = await User.findByCredentials(req.body.email, req.body.password)
@@ -27,20 +29,12 @@ router.post('/users/login', async (req, res) => {
     }
 })
 
+//forget password
 router.put('/users/forget-password', async (req, res) => {
     const { email } = req.body
     try {
         const user = await User.findByEmail(req.body.email)
         const resetToken = await user.generatePasswordToken()
-        // const data={
-        //     from:'noreply@hello.com',
-        //     to:email,
-        //     subject:'password reset link',
-        //     html:`
-        //     <h2>Please click on given link to reset your password </h2>
-        //     <p>${process.env.CLIENTURL}/resetpassword/${token}</p>
-        //     `
-        // }
         res.status(200).send({ user, resetToken })
     } catch (e) {
         res.status(400).send({ e: e.message })
@@ -48,6 +42,7 @@ router.put('/users/forget-password', async (req, res) => {
 
 })
 
+//reset password
 router.put('/users/reset-password', resetAuth, async (req, res) => {
     const user = await User.findOne({ _id: req.user._id })
     const updates = Object.keys(req.body)
@@ -58,6 +53,30 @@ router.put('/users/reset-password', resetAuth, async (req, res) => {
     }
     catch (e) {
         res.status(400).send(e)
+    }
+})
+
+//logout user
+router.post('/users/logout', auth, async (req, res) => {
+    try {
+        req.user.tokens = req.user.tokens.filter((token) => {
+            return token.token !== req.token
+        })
+        req.user.save()
+        res.send('logged out successfully!')
+    } catch (e) {
+        res.status(500).send({ e: e.message })
+    }
+})
+
+//logout from all device
+router.post('/users/logoutAll', auth, async (req, res) => {
+    try {
+        req.user.tokens = []
+        req.user.save()
+        res.send('logged out from all devices!')
+    } catch (e) {
+        res.status(500).send({ e: e.message })
     }
 })
 
